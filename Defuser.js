@@ -2,6 +2,7 @@ var five = require('johnny-five');
 var Config = require('./Config.js');
 var Miscs = require('./Utils/Miscs.js');
 var Leds = require('./Utils/Leds.js');
+var eventService = require('./Services/eventService.js');
 
 function Defuser() {
   this.potentiometer = {
@@ -41,7 +42,7 @@ Defuser.prototype.processPos = function processPos() {
     this.potentiometer.lastPos = this.potentiometer.currentPos;
   }
   this.potentiometer.diffPos = Math.abs(this.secret[this.currentSecretIndex] - Miscs.scaleAnalog(this.potentiometer.currentPos, 0, Config.defuser.potentiometer.maxPos));
-  console.log(this.potentiometer.potentiometer.value, this.potentiometer.diffPos, this.idle.time);
+  // console.log(this.potentiometer.potentiometer.value, this.potentiometer.diffPos, this.idle.time);
 };
 
 Defuser.prototype.processIdle = function processIdle() {
@@ -99,11 +100,13 @@ Defuser.prototype.next = function next() {
   if (this.currentSecretIndex > this.secret.length - 1) {
     this.stop();
   }
+  eventService.broadcast('defuser.next');
 };
 
 Defuser.prototype.stop = function end() {
   this.running = false;
   this.indicator.led.off();
+  eventService.broadcast('defuser.stop');
 };
 
 Defuser.prototype.start = function start() {
@@ -114,6 +117,7 @@ Defuser.prototype.start = function start() {
   this.potentiometer.lastPos = null;
   this.potentiometer.diffPos = null;
   this.idle.pause = true;
+  eventService.broadcast('defuser.start');
 };
 
 Defuser.prototype.process = function process() {
