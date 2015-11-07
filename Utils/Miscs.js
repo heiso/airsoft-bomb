@@ -5,11 +5,14 @@ function Miscs() {
 }
 
 Miscs.scaleAnalog = function scaleAnalog(value, min, max) {
-  var AMin = 0;
-  var AMax = 1024;
-  var percent = (value - AMin) / (AMax - AMin);
+  return this.scale(value, 0, 1024, min, max);
+};
+
+Miscs.scale = function scale(value, minValue, maxValue, min, max) {
+  var percent = (value - minValue) / (maxValue - minValue);
 
   return Math.round(percent * (max - min) + min);
 };
+
 
 module.exports = Miscs;

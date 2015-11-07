@@ -1,6 +1,15 @@
 module.exports = {
   'tickSpeed': 25,
 
+  'counterMeasure': {
+    'inputs': {
+
+    },
+    'outputs': {
+      'ledsPin': 8,
+      'ledsNbr': 8
+    }
+  },
   'defuser': {
     'inputs' : {
       'potentiometerPin': 'A0'

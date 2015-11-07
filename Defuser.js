@@ -1,7 +1,6 @@
 var five = require('johnny-five');
 var Config = require('./Config.js');
 var Miscs = require('./Utils/Miscs.js');
-var Leds = require('./Utils/Leds.js');
 var eventService = require('./Services/eventService.js');
 
 function Defuser() {
@@ -18,9 +17,7 @@ function Defuser() {
     'idle': 0,
     'speed': Config.tickSpeed
   };
-  this.unlocked = new Leds(Config.defuser.outputs.unlockedLedPins.map(function(pin) {
-    return new five.Led(pin);
-  }));
+  this.unlocked = new five.Leds(Config.defuser.outputs.unlockedLedPins);
   this.buzzer = new five.Piezo(Config.defuser.outputs.buzzerPin);
 
   this.secret = generateSecrete();
@@ -32,7 +29,7 @@ function Defuser() {
   this.running = false;
 
   this.buzzer.off();
-  console.log(this.secret);
+  eventService.broadcast('defuser.log', this.secret);
 }
 
 Defuser.prototype.processPos = function processPos() {
@@ -42,7 +39,7 @@ Defuser.prototype.processPos = function processPos() {
     this.potentiometer.lastPos = this.potentiometer.currentPos;
   }
   this.potentiometer.diffPos = Math.abs(this.secret[this.currentSecretIndex] - Miscs.scaleAnalog(this.potentiometer.currentPos, 0, Config.defuser.potentiometer.maxPos));
-  // console.log(this.potentiometer.potentiometer.value, this.potentiometer.diffPos, this.idle.time);
+  eventService.broadcast('defuser.log', this.potentiometer.potentiometer.value, this.potentiometer.diffPos, this.idle.time);
 };
 
 Defuser.prototype.processIdle = function processIdle() {
@@ -80,7 +77,7 @@ Defuser.prototype.processIndicator = function processIndicator() {
 Defuser.prototype.processUnlocked = function processUnlocked() {
   if (this.idle.time >= Config.defuser.potentiometer.maxIdleAllowed) {
     if (this.potentiometer.diffPos !== 0) {
-      this.unlocked.offAll();
+      this.unlocked.off();
       this.buzzer.frequency(262, 1000);
       setTimeout(function() {
         this.buzzer.off();

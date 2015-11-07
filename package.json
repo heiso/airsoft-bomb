@@ -11,5 +11,8 @@
   "devDependencies": {
     "johnny-five": "^0.9.1",
     "node-gyp": "^3.0.3"
+  },
+  "dependencies": {
+    "node-pixel": "^0.4.1"
   }
 }
