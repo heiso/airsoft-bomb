@@ -2,6 +2,7 @@ module.exports = {
   'tickSpeed': 25,
 
   'counterMeasure': {
+    'historyTtl': 1000,
     'inputs': {
 
     },

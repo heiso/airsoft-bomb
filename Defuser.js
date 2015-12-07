@@ -100,7 +100,7 @@ Defuser.prototype.next = function next() {
   eventService.broadcast('defuser.next');
 };
 
-Defuser.prototype.stop = function end() {
+Defuser.prototype.stop = function stop() {
   this.running = false;
   this.indicator.led.off();
   eventService.broadcast('defuser.stop');
