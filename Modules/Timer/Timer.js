@@ -28,6 +28,11 @@ Timer.prototype.setCountdown = function setCountdown(time) {
   this.countdown = time;
 };
 
+
+
+
+
+
 Timer.prototype.stop = function stop() {
   this.running = false;
   eventService.broadcast('timer.end');

@@ -23,10 +23,15 @@ board.on('ready', function() {
     defuser.init();
   });
 
+  board.io.i2cConfig();
+  board.io.i2cWriteReg(0x20, 0x00, 0x00);
+  board.io.i2cWriteReg(0x20, 0x01, 0x00);
+  board.io.i2cWriteReg(0x20, 0x12, 0xFF);
+  board.io.i2cWriteReg(0x20, 0x13, 0xFF);
   var tick = setInterval(function() {
     // defuser.process();
     // counterMeasure.process();
-    timer.process();
+    // timer.process();
   }, Config.tickSpeed);
 
 });

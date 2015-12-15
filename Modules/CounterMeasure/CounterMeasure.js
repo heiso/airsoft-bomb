@@ -93,6 +93,13 @@ CounterMeasure.prototype.processIndicator = function processIndicator() {
   this.indicator.leds.show();
 };
 
+CounterMeasure.prototype.processIndicator2 = function processIndicator2() {
+  board.io.i2cConfig();
+  board.io.i2cWriteReg(0x20, 0x00, 0x00);
+  board.io.i2cWriteReg(0x20, 0x01, 0x00);
+  board.io.i2cWriteReg(0x20, 0x13, 204);
+};
+
 CounterMeasure.prototype.explode = function explode() {
   eventService.broadcast('counterMeasure.explode');
 };
