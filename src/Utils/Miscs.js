@@ -1,4 +1,4 @@
-var Config = require('../Config.js');
+var Config = require(__base + 'Config.js');
 
 function Miscs() {
 
