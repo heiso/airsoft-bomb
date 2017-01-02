@@ -1,4 +1,4 @@
-var Uuid = require('../Utils/Uuid.js');
+var Uuid = require(__base + 'Utils/Uuid.js');
 
 var listeners = {};
 

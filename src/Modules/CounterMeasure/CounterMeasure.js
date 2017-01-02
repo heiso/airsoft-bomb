@@ -1,9 +1,12 @@
-var pixel = require("node-pixel");
 var five = require('johnny-five');
-var Config = require('./Config.js');
-var Miscs = require('./Utils/Miscs.js');
-var eventService = require('./Services/eventService.js');
-var board = require('./Services/boardService.js');
+var board = require(__base + 'Services/boardService.js');
+var pixel = require('node-pixel');
+
+var Config = require(__base + 'Config.js');
+var Miscs = require(__base + 'Utils/Miscs.js');
+var eventService = require(__base + 'Services/eventService.js');
+
+var counterMeasureConfig = require(__base + 'Modules/CounterMeasure/counterMeasureConfig.js');
 
 function CounterMeasure() {
   this.running = false;
@@ -21,8 +24,8 @@ function CounterMeasure() {
   };
   this.indicator = {
     'leds': new pixel.Strip({
-      'data': Config.counterMeasure.outputs.ledsPin,
-      'length': Config.counterMeasure.outputs.ledsNbr,
+      'data': counterMeasureConfig.outputs.ledsPin,
+      'length': counterMeasureConfig.outputs.ledsNbr,
       'board': board,
       'controller': 'FIRMATA',
     }),
@@ -50,13 +53,13 @@ CounterMeasure.prototype.processLevel = function processLevel() {
   var now = Date.now();
 
   for (var i = this.lvlHistoryTime.length-1; i >= 0; i--) {
-    if (this.lvlHistoryTime[i] + Config.counterMeasure.historyTtl < now) {
+    if (this.lvlHistoryTime[i] + counterMeasureConfig.historyTtl < now) {
       this.lvlHistory.splice(0, i + 1);
       this.lvlHistoryTime.splice(0, i + 1);
     }
   }
 
-  if (this.accelerometer.lvl > 2 && this.lvlComputed < Config.counterMeasure.outputs.ledsNbr) {
+  if (this.accelerometer.lvl > 2 && this.lvlComputed < counterMeasureConfig.outputs.ledsNbr) {
     this.lvlComputed = this.accelerometer.lvl;
     this.lvlHistory.push(this.accelerometer.lvl);
     this.lvlHistoryTime.push(now);
@@ -83,7 +86,7 @@ CounterMeasure.prototype.processLevel = function processLevel() {
 
 CounterMeasure.prototype.processIndicator = function processIndicator() {
   this.indicator.current = this.lvlComputed;
-  for (var i = 0; i < Config.counterMeasure.outputs.ledsNbr; i++) {
+  for (var i = 0; i < counterMeasureConfig.outputs.ledsNbr; i++) {
     if (i < this.indicator.current) {
       this.indicator.leds.pixel(i).color('#ff0000');
     } else {
@@ -91,13 +94,6 @@ CounterMeasure.prototype.processIndicator = function processIndicator() {
     }
   }
   this.indicator.leds.show();
-};
-
-CounterMeasure.prototype.processIndicator2 = function processIndicator2() {
-  board.io.i2cConfig();
-  board.io.i2cWriteReg(0x20, 0x00, 0x00);
-  board.io.i2cWriteReg(0x20, 0x01, 0x00);
-  board.io.i2cWriteReg(0x20, 0x13, 204);
 };
 
 CounterMeasure.prototype.explode = function explode() {
@@ -160,7 +156,7 @@ function calculateLvl(data) {
   var diffY = isInSameInterval(data.lastY, data.y) ? Math.abs(data.lastY - data.y) : 0;
   var diffZ = isInSameInterval(data.lastZ, data.z) ? Math.abs(data.lastZ - data.z) : 0;
   var value = Math.max(diffX, diffY, diffZ);
-  return Miscs.scale(value, 0, 65, 0, Config.counterMeasure.outputs.ledsNbr);
+  return Miscs.scale(value, 0, 65, 0, counterMeasureConfig.outputs.ledsNbr);
 }
 
 function isInSameInterval(a, b) {

@@ -1,24 +1,27 @@
 var five = require('johnny-five');
-var Config = require('./Config.js');
-var Miscs = require('./Utils/Miscs.js');
-var eventService = require('./Services/eventService.js');
+
+var Config = require(__base + 'Config.js');
+var Miscs = require(__base + 'Utils/Miscs.js');
+var eventService = require(__base + 'Services/eventService.js');
+
+var defuserConfig = require(__base + 'Modules/Defuser/defuserConfig.js');
 
 function Defuser() {
   this.potentiometer = {
     'potentiometer': new five.Sensor({
-      'pin': Config.defuser.inputs.potentiometerPin
+      'pin': defuserConfig.inputs.potentiometerPin
     }),
     'currentPos': null,
     'lastPos': null,
     'diffPos': null
   };
   this.indicator = {
-    'led': new five.Led(Config.defuser.outputs.indicatorLedPin),
+    'led': new five.Led(defuserConfig.outputs.indicatorLedPin),
     'idle': 0,
     'speed': Config.tickSpeed
   };
-  this.unlocked = new five.Leds(Config.defuser.outputs.unlockedLedPins);
-  this.buzzer = new five.Piezo(Config.defuser.outputs.buzzerPin);
+  this.unlocked = new five.Leds(defuserConfig.outputs.unlockedLedPins);
+  this.buzzer = new five.Piezo(defuserConfig.outputs.buzzerPin);
 
   this.secret = generateSecrete();
   this.currentSecretIndex = 0;
@@ -38,18 +41,18 @@ Defuser.prototype.processPos = function processPos() {
   if (this.potentiometer.lastPos === null) {
     this.potentiometer.lastPos = this.potentiometer.currentPos;
   }
-  this.potentiometer.diffPos = Math.abs(this.secret[this.currentSecretIndex] - Miscs.scaleAnalog(this.potentiometer.currentPos, 0, Config.defuser.potentiometer.maxPos));
+  this.potentiometer.diffPos = Math.abs(this.secret[this.currentSecretIndex] - Miscs.scaleAnalog(this.potentiometer.currentPos, 0, defuserConfig.potentiometer.maxPos));
   eventService.broadcast('defuser.log', this.potentiometer.potentiometer.value, this.potentiometer.diffPos, this.idle.time);
 };
 
 Defuser.prototype.processIdle = function processIdle() {
   if (!this.idle.pause) {
-    if (Math.abs(this.potentiometer.currentPos - this.potentiometer.lastPos) > Config.defuser.potentiometer.analogTreshold) {
+    if (Math.abs(this.potentiometer.currentPos - this.potentiometer.lastPos) > defuserConfig.potentiometer.analogTreshold) {
       this.idle.time = 0;
     } else {
       this.idle.time = this.idle.time + Config.tickSpeed;
     }
-  } else if (Math.abs(this.potentiometer.currentPos - this.potentiometer.lastPos) > Config.defuser.potentiometer.analogTreshold) {
+  } else if (Math.abs(this.potentiometer.currentPos - this.potentiometer.lastPos) > defuserConfig.potentiometer.analogTreshold) {
     this.idle.pause = false;
   }
 };
@@ -75,7 +78,7 @@ Defuser.prototype.processIndicator = function processIndicator() {
 };
 
 Defuser.prototype.processUnlocked = function processUnlocked() {
-  if (this.idle.time >= Config.defuser.potentiometer.maxIdleAllowed) {
+  if (this.idle.time >= defuserConfig.potentiometer.maxIdleAllowed) {
     if (this.potentiometer.diffPos !== 0) {
       this.unlocked.off();
       this.buzzer.frequency(262, 1000);
@@ -138,8 +141,8 @@ Defuser.prototype.init = function init() {
 function generateSecrete() {
   var min = 0;
   var rtn = [];
-  while(rtn.length < Config.defuser.outputs.unlockedLedPins.length) {
-    rtn.push(Math.floor(Math.random() * (Config.defuser.potentiometer.maxPos - min + 1) + min));
+  while(rtn.length < defuserConfig.outputs.unlockedLedPins.length) {
+    rtn.push(Math.floor(Math.random() * (defuserConfig.potentiometer.maxPos - min + 1) + min));
   }
   return rtn;
 }
